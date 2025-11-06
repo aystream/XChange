@@ -8,6 +8,7 @@ import org.knowm.xchange.gateio.GateioExchange;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyChain;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyInfo;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyPairDetails;
+import org.knowm.xchange.gateio.dto.marketdata.GateioFundingRate;
 import org.knowm.xchange.gateio.dto.marketdata.GateioOrderBook;
 import org.knowm.xchange.gateio.dto.marketdata.GateioServerTime;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTicker;
@@ -46,5 +47,14 @@ public class GateioMarketDataServiceRaw extends GateioBaseService {
   public GateioCurrencyPairDetails getCurrencyPairDetails(Instrument instrument)
       throws IOException {
     return gateio.getCurrencyPairDetails(GateioAdapters.toString(instrument));
+  }
+
+  public List<GateioFundingRate> getGateioFundingRates(String settle) throws IOException {
+    return gateio.getFundingRates(settle, null);
+  }
+
+  public List<GateioFundingRate> getGateioFundingRate(String settle, String contract)
+      throws IOException {
+    return gateio.getFundingRates(settle, contract);
   }
 }

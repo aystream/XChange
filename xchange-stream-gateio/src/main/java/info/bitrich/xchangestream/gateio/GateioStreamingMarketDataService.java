@@ -3,15 +3,18 @@ package info.bitrich.xchangestream.gateio;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.gateio.config.Config;
 import info.bitrich.xchangestream.gateio.dto.response.orderbook.GateioOrderBookNotification;
+import info.bitrich.xchangestream.gateio.dto.response.ticker.GateioFuturesTickerNotification;
 import info.bitrich.xchangestream.gateio.dto.response.ticker.GateioTickerNotification;
 import info.bitrich.xchangestream.gateio.dto.response.trade.GateioTradeNotification;
 import io.reactivex.rxjava3.core.Observable;
 import java.time.Duration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.marketdata.FundingRate;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
+import org.knowm.xchange.instrument.Instrument;
 
 public class GateioStreamingMarketDataService implements StreamingMarketDataService {
 
@@ -55,5 +58,22 @@ public class GateioStreamingMarketDataService implements StreamingMarketDataServ
         .subscribeChannel(Config.SPOT_TRADES_CHANNEL, currencyPair)
         .map(GateioTradeNotification.class::cast)
         .map(GateioStreamingAdapters::toTrade);
+  }
+
+  @Override
+  public Observable<FundingRate> getFundingRate(Instrument instrument, Object... args) {
+    // First arg is settle type (e.g., "usdt", "btc"), defaults to "usdt"
+    String settle = (String) ArrayUtils.get(args, 0, "usdt");
+
+    // Create subscription parameters: [settle, contract]
+    // Contract format: BTC_USDT
+    String contract =
+        instrument.getBase().getCurrencyCode() + "_" + instrument.getCounter().getCurrencyCode();
+    Object[] params = new Object[] {settle, contract};
+
+    return service
+        .subscribeChannel(Config.FUTURES_TICKERS_CHANNEL, params)
+        .map(GateioFuturesTickerNotification.class::cast)
+        .map(GateioStreamingAdapters::toFundingRate);
   }
 }

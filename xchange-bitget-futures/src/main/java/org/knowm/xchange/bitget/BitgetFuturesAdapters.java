@@ -1,13 +1,18 @@
 package org.knowm.xchange.bitget;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import org.knowm.xchange.bitget.dto.marketdata.BitgetContractDto;
 import org.knowm.xchange.bitget.dto.marketdata.BitgetFuturesTickerDto;
 import org.knowm.xchange.currency.Currency;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.instrument.Instrument;
@@ -81,5 +86,52 @@ public class BitgetFuturesAdapters {
 
   public Date toDate(Instant instant) {
     return Optional.ofNullable(instant).map(Date::from).orElse(null);
+  }
+
+  public FundingRate adaptFundingRate(
+      BitgetFuturesTickerDto ticker, Instrument instrument) {
+    if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
+      return null;
+    }
+
+    // Bitget provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = ticker.getFundingRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, RoundingMode.HALF_EVEN);
+
+    // Parse the next funding time from string format (e.g., "1730275200000")
+    Date nextFundingTime;
+    try {
+      long timestamp = Long.parseLong(ticker.getNextFundingTime());
+      nextFundingTime = new Date(timestamp);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+
+    long effectiveInMinutes =
+        (nextFundingTime.getTime() - System.currentTimeMillis()) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(nextFundingTime)
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
+        .build();
+  }
+
+  public FundingRates adaptFundingRates(List<BitgetFuturesTickerDto> tickers) {
+    List<FundingRate> fundingRates = new ArrayList<>();
+    for (BitgetFuturesTickerDto ticker : tickers) {
+      Instrument instrument = ticker.getInstrument();
+      if (instrument != null) {
+        FundingRate fundingRate = adaptFundingRate(ticker, instrument);
+        if (fundingRate != null) {
+          fundingRates.add(fundingRate);
+        }
+      }
+    }
+    return new FundingRates(fundingRates);
   }
 }

@@ -238,6 +238,51 @@
             <artifactId>xchange-mercadobitcoin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- XChange MEXC exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-mexc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Bybit exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-bybit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Bitget Futures exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-bitget-futures</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Gate.io V4 exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-gateio-v4</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Streaming support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-bybit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-bitget</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-gateio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-mexc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- XChange OkCoin exchange support -->
         <dependency>
             <groupId>${project.groupId}</groupId>

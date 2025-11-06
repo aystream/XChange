@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.meta.ExchangeHealth;
@@ -21,6 +23,7 @@ import org.knowm.xchange.gateio.config.Config;
 import org.knowm.xchange.gateio.dto.GateioException;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyInfo;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyPairDetails;
+import org.knowm.xchange.gateio.dto.marketdata.GateioFundingRate;
 import org.knowm.xchange.gateio.dto.marketdata.GateioOrderBook;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTicker;
 import org.knowm.xchange.instrument.Instrument;
@@ -132,6 +135,35 @@ public class GateioMarketDataService extends GateioMarketDataServiceRaw
                           gateioCurrencyPairDetails.getAsset(),
                           gateioCurrencyPairDetails.getQuote()),
                   GateioAdapters::toInstrumentMetaData));
+    } catch (GateioException e) {
+      throw GateioErrorAdapter.adapt(e);
+    }
+  }
+
+  @Override
+  public FundingRate getFundingRate(Instrument instrument) throws IOException {
+    Objects.requireNonNull(instrument, "Instrument cannot be null");
+
+    try {
+      // Convert instrument to contract format (e.g., BTC_USDT)
+      String contract = GateioAdapters.toString(instrument);
+      List<GateioFundingRate> rates = getGateioFundingRate("usdt", contract);
+
+      if (rates.isEmpty()) {
+        return null;
+      }
+
+      return GateioAdapters.adaptFundingRate(rates.get(0));
+    } catch (GateioException e) {
+      throw GateioErrorAdapter.adapt(e);
+    }
+  }
+
+  @Override
+  public FundingRates getFundingRates() throws IOException {
+    try {
+      List<GateioFundingRate> rates = getGateioFundingRates("usdt");
+      return GateioAdapters.adaptFundingRates(rates);
     } catch (GateioException e) {
       throw GateioErrorAdapter.adapt(e);
     }

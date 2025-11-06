@@ -68,6 +68,9 @@ public class BitgetFuturesTickerDto {
   @JsonProperty("fundingRate")
   private BigDecimal fundingRate;
 
+  @JsonProperty("nextFundingTime")
+  private String nextFundingTime;
+
   @JsonProperty("holdingAmount")
   private BigDecimal holdingAmount;
 

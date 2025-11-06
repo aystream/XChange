@@ -29,4 +29,14 @@ public class BitgetFuturesMarketDataServiceRaw extends BitgetFuturesBaseService 
       return bitgetFutures.ticker(BitgetAdapters.toString(instrument), "USDT-FUTURES").getData();
     }
   }
+
+  public List<BitgetFuturesTickerDto> getBitgetFundingRates(String productType)
+      throws IOException {
+    return bitgetFutures.currentFundRate(null, productType).getData();
+  }
+
+  public List<BitgetFuturesTickerDto> getBitgetFundingRate(String symbol, String productType)
+      throws IOException {
+    return bitgetFutures.currentFundRate(symbol, productType).getData();
+  }
 }

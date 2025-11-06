@@ -35,4 +35,10 @@ public interface BitgetFutures {
   BitgetResponse<List<BitgetFuturesTickerDto>> ticker(
       @QueryParam("symbol") String symbol, @QueryParam("productType") String productType)
       throws IOException, BitgetException;
+
+  @GET
+  @Path("api/v2/mix/market/current-fund-rate")
+  BitgetResponse<List<BitgetFuturesTickerDto>> currentFundRate(
+      @QueryParam("symbol") String symbol, @QueryParam("productType") String productType)
+      throws IOException, BitgetException;
 }

@@ -15,6 +15,8 @@ import org.knowm.xchange.bitget.dto.marketdata.BitgetContractDto;
 import org.knowm.xchange.bitget.dto.marketdata.BitgetFuturesTickerDto;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.derivative.FuturesContract;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.meta.ExchangeHealth;
 import org.knowm.xchange.instrument.Instrument;
@@ -83,6 +85,35 @@ public class BitgetFuturesMarketDataService extends BitgetFuturesMarketDataServi
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
 
+    } catch (BitgetException e) {
+      throw BitgetErrorAdapter.adapt(e);
+    }
+  }
+
+  @Override
+  public FundingRate getFundingRate(Instrument instrument) throws IOException {
+    Objects.requireNonNull(instrument, "Instrument cannot be null");
+
+    try {
+      String symbol = BitgetFuturesAdapters.toString(instrument);
+      List<BitgetFuturesTickerDto> tickers =
+          getBitgetFundingRate(symbol, "USDT-FUTURES");
+
+      if (tickers.isEmpty()) {
+        return null;
+      }
+
+      return BitgetFuturesAdapters.adaptFundingRate(tickers.get(0), instrument);
+    } catch (BitgetException e) {
+      throw BitgetErrorAdapter.adapt(e);
+    }
+  }
+
+  @Override
+  public FundingRates getFundingRates() throws IOException {
+    try {
+      List<BitgetFuturesTickerDto> tickers = getBitgetFundingRates("USDT-FUTURES");
+      return BitgetFuturesAdapters.adaptFundingRates(tickers);
     } catch (BitgetException e) {
       throw BitgetErrorAdapter.adapt(e);
     }

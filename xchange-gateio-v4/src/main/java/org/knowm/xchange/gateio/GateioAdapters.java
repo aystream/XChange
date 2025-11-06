@@ -2,16 +2,21 @@ package org.knowm.xchange.gateio;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.derivative.FuturesContract;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderStatus;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.FundingRecord;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.meta.InstrumentMetaData;
@@ -22,6 +27,7 @@ import org.knowm.xchange.gateio.dto.account.GateioAccountBookRecord;
 import org.knowm.xchange.gateio.dto.account.GateioOrder;
 import org.knowm.xchange.gateio.dto.account.GateioWithdrawalRequest;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyPairDetails;
+import org.knowm.xchange.gateio.dto.marketdata.GateioFundingRate;
 import org.knowm.xchange.gateio.dto.marketdata.GateioOrderBook;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTicker;
 import org.knowm.xchange.gateio.dto.trade.GateioUserTrade;
@@ -247,5 +253,61 @@ public class GateioAdapters {
         .amount(gateioAccountBookRecord.getChange().abs())
         .description(gateioAccountBookRecord.getTypeDescription())
         .build();
+  }
+
+  public static Instrument contractToInstrument(String contract) {
+    if (contract == null) {
+      return null;
+    }
+    // Gate.io contract format: BTC_USDT, BTC_USD
+    String[] parts = contract.split("_");
+    if (parts.length == 2) {
+      CurrencyPair pair = new CurrencyPair(parts[0], parts[1]);
+      return new FuturesContract(pair, "PERP");
+    }
+    return null;
+  }
+
+  public static FundingRate adaptFundingRate(GateioFundingRate gateioRate) {
+    if (gateioRate.getRate() == null || gateioRate.getTimestamp() == null) {
+      return null;
+    }
+
+    Instrument instrument = contractToInstrument(gateioRate.getContract());
+    if (instrument == null) {
+      return null;
+    }
+
+    // Gate.io provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = gateioRate.getRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, RoundingMode.HALF_EVEN);
+
+    // Timestamp is in seconds, convert to milliseconds
+    long timestampMillis = gateioRate.getTimestamp() * 1000;
+    Date nextFundingTime = new Date(timestampMillis);
+
+    long effectiveInMinutes =
+        (nextFundingTime.getTime() - System.currentTimeMillis()) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(nextFundingTime)
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
+        .build();
+  }
+
+  public static FundingRates adaptFundingRates(List<GateioFundingRate> gateioRates) {
+    List<FundingRate> fundingRates = new ArrayList<>();
+    for (GateioFundingRate rate : gateioRates) {
+      FundingRate fundingRate = adaptFundingRate(rate);
+      if (fundingRate != null) {
+        fundingRates.add(fundingRate);
+      }
+    }
+    return new FundingRates(fundingRates);
   }
 }
