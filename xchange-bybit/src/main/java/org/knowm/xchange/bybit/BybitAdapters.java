@@ -49,6 +49,8 @@ import org.knowm.xchange.dto.Order.OrderStatus;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.Balance;
 import org.knowm.xchange.dto.account.Wallet;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Ticker.Builder;
 import org.knowm.xchange.dto.meta.InstrumentMetaData;
@@ -568,5 +570,43 @@ public class BybitAdapters {
         null,
         null,
         null);
+  }
+
+  public static FundingRate adaptFundingRate(
+      BybitLinearInverseTicker ticker, Instrument instrument) {
+    if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
+      return null;
+    }
+
+    // Bybit provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = ticker.getFundingRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, java.math.RoundingMode.HALF_EVEN);
+
+    Date now = new Date();
+    long effectiveInMinutes =
+        (ticker.getNextFundingTime().getTime() - now.getTime()) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(ticker.getNextFundingTime())
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
+        .build();
+  }
+
+  public static FundingRates adaptFundingRates(
+      List<BybitLinearInverseTicker> tickers, BybitCategory category) {
+    List<FundingRate> fundingRates = new ArrayList<>();
+    for (BybitLinearInverseTicker ticker : tickers) {
+      Instrument instrument = convertBybitSymbolToInstrument(ticker.getSymbol(), category);
+      FundingRate fundingRate = adaptFundingRate(ticker, instrument);
+      if (fundingRate != null) {
+        fundingRates.add(fundingRate);
+      }
+    }
+    return new FundingRates(fundingRates);
   }
 }

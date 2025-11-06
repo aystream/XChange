@@ -25,7 +25,10 @@ public class BitgetChannel {
   @Getter
   @AllArgsConstructor
   public static enum MarketType {
-    SPOT("SPOT");
+    SPOT("SPOT"),
+    USDT_FUTURES("USDT-FUTURES"),
+    COIN_FUTURES("COIN-FUTURES"),
+    USDC_FUTURES("USDC-FUTURES");
 
     @JsonValue private final String value;
 

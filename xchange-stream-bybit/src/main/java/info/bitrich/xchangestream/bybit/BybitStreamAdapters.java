@@ -26,6 +26,7 @@ import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.OpenPosition;
 import org.knowm.xchange.dto.account.OpenPosition.Type;
 import org.knowm.xchange.dto.account.OpenPositions;
+import org.knowm.xchange.dto.marketdata.FundingRate;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
@@ -318,5 +319,31 @@ public class BybitStreamAdapters {
               null));
     }
     return new BybitStreamBatchAmendOrdersPayload(category, ordersPayload);
+  }
+
+  public static FundingRate adaptFundingRate(
+      org.knowm.xchange.bybit.dto.marketdata.tickers.linear.BybitLinearInverseTicker ticker,
+      Instrument instrument) {
+    if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
+      return null;
+    }
+
+    // Bybit provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = ticker.getFundingRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, java.math.RoundingMode.HALF_EVEN);
+
+    Date now = new Date();
+    long effectiveInMinutes =
+        (ticker.getNextFundingTime().getTime() - now.getTime()) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(ticker.getNextFundingTime())
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
+        .build();
   }
 }

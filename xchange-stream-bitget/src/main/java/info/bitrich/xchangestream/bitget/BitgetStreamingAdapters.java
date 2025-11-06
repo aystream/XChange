@@ -3,6 +3,8 @@ package info.bitrich.xchangestream.bitget;
 import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel;
 import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel.ChannelType;
 import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel.MarketType;
+import info.bitrich.xchangestream.bitget.dto.response.BitgetFuturesTickerNotification;
+import info.bitrich.xchangestream.bitget.dto.response.BitgetFuturesTickerNotification.BitgetFuturesTicker;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetTickerNotification;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetTickerNotification.TickerData;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetWsOrderBookSnapshotNotification;
@@ -20,6 +22,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.knowm.xchange.bitget.BitgetAdapters;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
+import org.knowm.xchange.dto.marketdata.FundingRate;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.trade.LimitOrder;
@@ -134,6 +137,36 @@ public class BitgetStreamingAdapters {
                 .map(FeeDetail::getCurrency)
                 .findFirst()
                 .orElse(null))
+        .build();
+  }
+
+  public FundingRate toFundingRate(
+      BitgetFuturesTickerNotification notification, Instrument instrument) {
+    BitgetFuturesTicker ticker = notification.getData().get(0);
+
+    if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
+      return null;
+    }
+
+    // Bitget provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = ticker.getFundingRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, java.math.RoundingMode.HALF_EVEN);
+
+    // Parse nextFundingTime (milliseconds string)
+    long nextFundingTimeMs = Long.parseLong(ticker.getNextFundingTime());
+    java.util.Date nextFundingDate = new java.util.Date(nextFundingTimeMs);
+
+    long effectiveInMinutes =
+        (nextFundingTimeMs - System.currentTimeMillis()) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(nextFundingDate)
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
         .build();
   }
 }

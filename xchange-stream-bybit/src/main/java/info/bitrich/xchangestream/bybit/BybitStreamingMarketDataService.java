@@ -189,4 +189,24 @@ public class BybitStreamingMarketDataService implements StreamingMarketDataServi
                   BybitStreamAdapters.adaptTrades(bybitTradeList, instrument).getTrades());
             });
   }
+
+  @Override
+  public Observable<org.knowm.xchange.dto.marketdata.FundingRate> getFundingRate(
+      Instrument instrument, Object... args) {
+    String channelUniqueId = TICKER + convertToBybitSymbol(instrument);
+
+    return streamingService
+        .subscribeChannel(channelUniqueId)
+        .filter(message -> message.has("data"))
+        .map(
+            jsonNode -> {
+              org.knowm.xchange.bybit.dto.marketdata.tickers.linear.BybitLinearInverseTicker
+                  ticker =
+                      mapper.treeToValue(
+                          jsonNode.get("data"),
+                          org.knowm.xchange.bybit.dto.marketdata.tickers.linear
+                              .BybitLinearInverseTicker.class);
+              return BybitStreamAdapters.adaptFundingRate(ticker, instrument);
+            });
+  }
 }

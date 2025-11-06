@@ -14,6 +14,8 @@ import org.knowm.xchange.bybit.dto.marketdata.tickers.option.BybitOptionTicker;
 import org.knowm.xchange.bybit.dto.marketdata.tickers.spot.BybitSpotTicker;
 import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.marketdata.FundingRate;
+import org.knowm.xchange.dto.marketdata.FundingRates;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
 import org.knowm.xchange.instrument.Instrument;
@@ -101,5 +103,73 @@ public class BybitMarketDataService extends BybitMarketDataServiceRaw implements
       }
     }
     return result;
+  }
+
+  @Override
+  public FundingRate getFundingRate(Instrument instrument) throws IOException {
+    Assert.notNull(instrument, "Null instrument");
+
+    BybitCategory category = BybitAdapters.getCategory(instrument);
+
+    // Funding rates are only available for linear and inverse perpetual contracts
+    if (category != BybitCategory.LINEAR && category != BybitCategory.INVERSE) {
+      throw new NotYetImplementedForExchangeException(
+          "Funding rates are only available for LINEAR and INVERSE categories");
+    }
+
+    BybitResult<BybitTickers<BybitTicker>> response =
+        getTicker24h(category, BybitAdapters.convertToBybitSymbol(instrument));
+
+    if (response.getResult().getList().isEmpty()) {
+      return null;
+    }
+
+    BybitLinearInverseTicker ticker =
+        (BybitLinearInverseTicker) response.getResult().getList().get(0);
+    return BybitAdapters.adaptFundingRate(ticker, instrument);
+  }
+
+  @Override
+  public FundingRates getFundingRates() throws IOException {
+    // Get funding rates for both LINEAR and INVERSE categories
+    List<BybitLinearInverseTicker> allTickers = new ArrayList<>();
+
+    // Get LINEAR tickers
+    try {
+      BybitResult<BybitTickers<BybitTicker>> linearResponse = getTickers(BybitCategory.LINEAR);
+      for (BybitTicker ticker : linearResponse.getResult().getList()) {
+        if (ticker instanceof BybitLinearInverseTicker) {
+          allTickers.add((BybitLinearInverseTicker) ticker);
+        }
+      }
+    } catch (Exception e) {
+      // Continue if LINEAR fails
+    }
+
+    // Get INVERSE tickers
+    try {
+      BybitResult<BybitTickers<BybitTicker>> inverseResponse = getTickers(BybitCategory.INVERSE);
+      for (BybitTicker ticker : inverseResponse.getResult().getList()) {
+        if (ticker instanceof BybitLinearInverseTicker) {
+          allTickers.add((BybitLinearInverseTicker) ticker);
+        }
+      }
+    } catch (Exception e) {
+      // Continue if INVERSE fails
+    }
+
+    List<FundingRate> fundingRates = new ArrayList<>();
+    for (BybitLinearInverseTicker ticker : allTickers) {
+      BybitCategory category =
+          BybitAdapters.getCategory(
+              BybitAdapters.convertBybitSymbolToInstrument(ticker.getSymbol(), BybitCategory.LINEAR));
+      Instrument instrument = BybitAdapters.convertBybitSymbolToInstrument(ticker.getSymbol(), category);
+      FundingRate fundingRate = BybitAdapters.adaptFundingRate(ticker, instrument);
+      if (fundingRate != null) {
+        fundingRates.add(fundingRate);
+      }
+    }
+
+    return new FundingRates(fundingRates);
   }
 }
