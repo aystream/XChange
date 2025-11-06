@@ -4,7 +4,6 @@ import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel;
 import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel.ChannelType;
 import info.bitrich.xchangestream.bitget.dto.common.BitgetChannel.MarketType;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetFuturesTickerNotification;
-import info.bitrich.xchangestream.bitget.dto.response.BitgetFuturesTickerNotification.BitgetFuturesTicker;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetTickerNotification;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetTickerNotification.TickerData;
 import info.bitrich.xchangestream.bitget.dto.response.BitgetWsOrderBookSnapshotNotification;
@@ -142,7 +141,7 @@ public class BitgetStreamingAdapters {
 
   public FundingRate toFundingRate(
       BitgetFuturesTickerNotification notification, Instrument instrument) {
-    BitgetFuturesTicker ticker = notification.getData().get(0);
+    BitgetFuturesTickerNotification.BitgetFuturesTicker ticker = notification.getPayloadItems().get(0);
 
     if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
       return null;

@@ -8,19 +8,14 @@ import java.time.Instant;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class BitgetFuturesTickerNotification extends BitgetWsNotification {
-
-  @JsonProperty("action")
-  private Action action;
-
-  @JsonProperty("arg")
-  private BitgetChannel channel;
-
-  @JsonProperty("data")
-  private List<BitgetFuturesTicker> data;
+@SuperBuilder(toBuilder = true)
+@Jacksonized
+public class BitgetFuturesTickerNotification extends BitgetWsNotification<BitgetFuturesTickerNotification.BitgetFuturesTicker> {
 
   @Data
   public static class BitgetFuturesTicker {
