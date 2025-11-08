@@ -1,8 +1,11 @@
 package org.knowm.xchange.examples.bybit.streaming;
 
+import info.bitrich.xchangestream.bybit.BybitStreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
+import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.bybit.dto.BybitCategory;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.derivative.FuturesContract;
 import org.knowm.xchange.dto.marketdata.FundingRate;
@@ -23,10 +26,11 @@ import org.knowm.xchange.dto.marketdata.FundingRate;
 public class BybitStreamingFundingRateDemo {
 
   public static void main(String[] args) throws InterruptedException {
-    // Create Bybit streaming exchange instance
-    StreamingExchange exchange =
-        StreamingExchangeFactory.INSTANCE.createExchange(
-            info.bitrich.xchangestream.bybit.BybitStreamingExchange.class);
+    // Create Bybit streaming exchange instance with LINEAR category for USDT perpetual futures
+    ExchangeSpecification spec = new BybitStreamingExchange().getDefaultExchangeSpecification();
+    spec.setExchangeSpecificParametersItem(BybitStreamingExchange.EXCHANGE_TYPE, BybitCategory.LINEAR);
+
+    StreamingExchange exchange = StreamingExchangeFactory.INSTANCE.createExchange(spec);
 
     // Connect to WebSocket API
     System.out.println("Connecting to Bybit WebSocket...");

@@ -59,7 +59,7 @@ public class MEXCStreamingService extends JsonNettyStreamingService {
     // channelName format: "push.ticker.BTC_USDT"
     String[] parts = channelName.split("\\.", 3);
     if (parts.length == 3) {
-      String channel = parts[0] + "." + parts[1]; // "push.ticker"
+      String channel = parts[1]; // "ticker" (not "push.ticker")
       String symbol = parts[2]; // "BTC_USDT"
       return objectMapper.writeValueAsString(
           new MEXCSubscribeMessage("sub." + channel, new MEXCSubscribeParam(symbol)));
@@ -72,7 +72,7 @@ public class MEXCStreamingService extends JsonNettyStreamingService {
     LOG.info("getUnsubscribeMessage {}", channelName);
     String[] parts = channelName.split("\\.", 3);
     if (parts.length == 3) {
-      String channel = parts[0] + "." + parts[1];
+      String channel = parts[1]; // "ticker" (not "push.ticker")
       String symbol = parts[2];
       return objectMapper.writeValueAsString(
           new MEXCSubscribeMessage("unsub." + channel, new MEXCSubscribeParam(symbol)));

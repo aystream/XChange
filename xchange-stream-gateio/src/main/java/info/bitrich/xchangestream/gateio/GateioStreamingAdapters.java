@@ -135,7 +135,12 @@ public class GateioStreamingAdapters {
   }
 
   public FundingRate toFundingRate(GateioFuturesTickerNotification notification) {
-    FuturesTickerPayload payload = notification.getResult();
+    if (notification.getResult() == null || notification.getResult().isEmpty()) {
+      return null;
+    }
+
+    // Gate.io returns an array, get the first element
+    FuturesTickerPayload payload = notification.getResult().get(0);
 
     if (payload.getFundingRate() == null || payload.getContract() == null) {
       return null;

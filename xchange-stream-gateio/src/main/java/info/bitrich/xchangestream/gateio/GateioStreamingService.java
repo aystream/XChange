@@ -58,6 +58,13 @@ public class GateioStreamingService extends NettyStreamingService<GateioWsNotifi
 
   @Override
   public String getSubscriptionUniqueId(String channelName, Object... args) {
+    // For futures tickers, args are [settle, contract]
+    if (Config.FUTURES_TICKERS_CHANNEL.equals(channelName) && args.length >= 2) {
+      String contract = (String) args[1];
+      return String.format("%s%s%s", channelName, Config.CHANNEL_NAME_DELIMITER, contract);
+    }
+
+    // For other channels, use CurrencyPair from first arg
     final CurrencyPair currencyPair =
         (args.length > 0 && args[0] instanceof CurrencyPair) ? ((CurrencyPair) args[0]) : null;
 
@@ -147,6 +154,18 @@ public class GateioStreamingService extends NettyStreamingService<GateioWsNotifi
           } else {
             payload = CurrencyPairPayload.builder().currencyPair(currencyPair).build();
           }
+          break;
+        }
+
+      // channel requires settle and contract name for futures
+      case Config.FUTURES_TICKERS_CHANNEL:
+        {
+          String settle = (String) ArrayUtils.get(args, 0);
+          String contract = (String) ArrayUtils.get(args, 1);
+          Objects.requireNonNull(settle);
+          Objects.requireNonNull(contract);
+
+          payload = java.util.Arrays.asList(contract);
           break;
         }
 

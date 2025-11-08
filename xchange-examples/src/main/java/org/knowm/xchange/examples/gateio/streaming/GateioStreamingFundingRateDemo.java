@@ -24,13 +24,20 @@ import org.knowm.xchange.dto.marketdata.FundingRate;
 public class GateioStreamingFundingRateDemo {
 
   public static void main(String[] args) throws InterruptedException {
-    // Create Gate.io streaming exchange instance
-    StreamingExchange exchange =
-        StreamingExchangeFactory.INSTANCE.createExchange(
-            info.bitrich.xchangestream.gateio.GateioStreamingExchange.class);
+    // Create Gate.io streaming exchange instance with futures WebSocket URL
+    info.bitrich.xchangestream.gateio.GateioStreamingExchange gateioExchange =
+        new info.bitrich.xchangestream.gateio.GateioStreamingExchange();
+    org.knowm.xchange.ExchangeSpecification spec = gateioExchange.getDefaultExchangeSpecification();
+
+    // Set the futures WebSocket URL for USDT perpetual futures
+    spec.setSslUri("wss://fx-ws.gateio.ws/v4/ws/usdt");
+
+    gateioExchange.applySpecification(spec);
+    StreamingExchange exchange = gateioExchange;
 
     // Connect to WebSocket API
-    System.out.println("Connecting to Gate.io WebSocket...");
+    System.out.println("Connecting to Gate.io Futures WebSocket...");
+    System.out.println("URL: wss://fx-ws.gateio.ws/v4/ws/usdt");
     exchange.connect().blockingAwait();
     System.out.println("Connected!");
 
@@ -45,10 +52,10 @@ public class GateioStreamingFundingRateDemo {
     System.out.println("Funding schedule: Every 8 hours at 00:00, 08:00, 16:00 UTC");
     System.out.println("(Press Ctrl+C to stop)\n");
 
-    // Subscribe with default "usdt" settle type
-    // You can also specify: getFundingRate(btcUsdtPerp, "btc") or "usd"
+    // Subscribe with "usdt" settle type for USDT perpetual futures
+    // You can also specify: getFundingRate(btcUsdtPerp, "btc") or "usd" for BTC or USD settled contracts
     streamingMarketDataService
-        .getFundingRate(btcUsdtPerp) // defaults to "usdt"
+        .getFundingRate(btcUsdtPerp, "usdt")
         .subscribe(
             fundingRate -> {
               System.out.println("=== Funding Rate Update ===");

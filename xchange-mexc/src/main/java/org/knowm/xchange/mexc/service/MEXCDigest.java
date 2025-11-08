@@ -25,7 +25,11 @@ public class MEXCDigest extends BaseParamsDigest {
   }
 
   public static ParamsDigest createInstance(String secretKey) {
-    return new MEXCDigest(secretKey);
+    if (secretKey != null) {
+      return new MEXCDigest(secretKey);
+    } else {
+      return null;
+    }
   }
 
   @Override
