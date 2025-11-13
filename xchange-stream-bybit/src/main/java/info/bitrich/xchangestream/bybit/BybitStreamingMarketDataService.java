@@ -207,6 +207,7 @@ public class BybitStreamingMarketDataService implements StreamingMarketDataServi
                           org.knowm.xchange.bybit.dto.marketdata.tickers.linear
                               .BybitLinearInverseTicker.class);
               return BybitStreamAdapters.adaptFundingRate(ticker, instrument);
-            });
+            })
+        .filter(fundingRate -> fundingRate != null);
   }
 }

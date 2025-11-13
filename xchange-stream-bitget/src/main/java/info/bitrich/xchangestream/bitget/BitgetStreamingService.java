@@ -103,7 +103,17 @@ public class BitgetStreamingService extends NettyStreamingService<BitgetWsNotifi
       }
       // copy nested value of arg.channel to the root of json to detect deserialization type
       else if (jsonNode.has("arg") && jsonNode.get("arg").has("channel")) {
-        ((ObjectNode) jsonNode).put("messageType", jsonNode.get("arg").get("channel").asText());
+        String channelType = jsonNode.get("arg").get("channel").asText();
+        String instType = jsonNode.get("arg").has("instType")
+            ? jsonNode.get("arg").get("instType").asText()
+            : null;
+
+        // For futures markets, use a different messageType to trigger BitgetFuturesTickerNotification
+        if (instType != null && !instType.equals("SPOT") && channelType.equals("ticker")) {
+          ((ObjectNode) jsonNode).put("messageType", "futures_ticker");
+        } else {
+          ((ObjectNode) jsonNode).put("messageType", channelType);
+        }
       }
 
       bitgetWsNotification = objectMapper.treeToValue(jsonNode, BitgetWsNotification.class);

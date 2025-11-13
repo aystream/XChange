@@ -13,6 +13,7 @@ import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyChain;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyInfo;
 import org.knowm.xchange.gateio.dto.marketdata.GateioCurrencyPairDetails;
 import org.knowm.xchange.gateio.dto.marketdata.GateioFundingRate;
+import org.knowm.xchange.gateio.dto.marketdata.GateioFuturesContract;
 import org.knowm.xchange.gateio.dto.marketdata.GateioOrderBook;
 import org.knowm.xchange.gateio.dto.marketdata.GateioServerTime;
 import org.knowm.xchange.gateio.dto.marketdata.GateioTicker;
@@ -58,5 +59,11 @@ public interface Gateio {
   @Path("futures/{settle}/funding_rate")
   List<GateioFundingRate> getFundingRates(
       @PathParam("settle") String settle, @QueryParam("contract") String contract)
+      throws IOException, GateioException;
+
+  @GET
+  @Path("futures/{settle}/contracts/{contract}")
+  GateioFuturesContract getContract(
+      @PathParam("settle") String settle, @PathParam("contract") String contract)
       throws IOException, GateioException;
 }

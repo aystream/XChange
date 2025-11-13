@@ -120,9 +120,8 @@ public class BybitExchange extends BaseExchange implements Exchange {
 
   @Override
   public void applySpecification(ExchangeSpecification exchangeSpecification) {
-    if (exchangeSpecification
-        .getExchangeSpecificParametersItem(Exchange.USE_SANDBOX)
-        .equals(true)) {
+    if (Boolean.TRUE.equals(exchangeSpecification
+        .getExchangeSpecificParametersItem(Exchange.USE_SANDBOX))) {
       exchangeSpecification.setSslUri(DEMO_URL);
     }
 

@@ -694,7 +694,7 @@ public class OkexAdapters {
                     BigDecimal.valueOf(8),
                     okexFundingRate.get(0).getFundingRate().scale(),
                     RoundingMode.HALF_EVEN))
-        .fundingRateDate(okexFundingRate.get(0).getFundingTime())
+        .fundingRateDate(okexFundingRate.get(0).getNextFundingTime())
         .build();
   }
 

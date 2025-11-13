@@ -29,13 +29,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class GateioStreamingMarketDataServiceTest {
 
   @Mock GateioStreamingService gateioStreamingService;
+  @Mock org.knowm.xchange.gateio.GateioExchange gateioExchange;
   GateioStreamingMarketDataService gateioStreamingMarketDataService;
 
   ObjectMapper objectMapper = Config.getInstance().getObjectMapper();
 
   @BeforeEach
   public void setup() {
-    gateioStreamingMarketDataService = new GateioStreamingMarketDataService(gateioStreamingService);
+    gateioStreamingMarketDataService = new GateioStreamingMarketDataService(gateioStreamingService, gateioExchange);
   }
 
   @Test

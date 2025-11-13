@@ -198,4 +198,11 @@ public class BybitStreamingExchange extends BybitExchange implements StreamingEx
       streamingUserDataService.resubscribeChannels();
     }
   }
+
+  /**
+   * Get the underlying streaming service for advanced operations like batch subscriptions
+   */
+  public BybitStreamingService getStreamingService() {
+    return streamingService;
+  }
 }

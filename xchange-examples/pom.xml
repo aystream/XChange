@@ -65,6 +65,12 @@
             <artifactId>xchange-bitflyer</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- XChange Bitget Futures exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-bitget-futures</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- XChange Bithumb exchange support -->
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -109,6 +115,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>xchange-btcturk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Bybit exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-bybit</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -174,6 +186,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>xchange-gateio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Gate.io V4 exchange support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-gateio-v4</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- XChange Hitbtc exchange support -->
@@ -244,45 +262,6 @@
             <artifactId>xchange-mexc</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- XChange Bybit exchange support -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-bybit</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- XChange Bitget Futures exchange support -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-bitget-futures</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- XChange Gate.io V4 exchange support -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-gateio-v4</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- XChange Streaming support -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-stream-bybit</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-stream-bitget</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-stream-gateio</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>xchange-stream-mexc</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!-- XChange OkCoin exchange support -->
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -323,6 +302,27 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>xchange-ripple</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-bitget</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- XChange Streaming support -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-bybit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-gateio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>xchange-stream-mexc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

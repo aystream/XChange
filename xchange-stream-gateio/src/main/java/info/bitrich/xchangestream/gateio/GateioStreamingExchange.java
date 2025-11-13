@@ -27,7 +27,7 @@ public class GateioStreamingExchange extends GateioExchange implements Streaming
             exchangeSpecification.getApiKey(),
             exchangeSpecification.getSecretKey());
     applyStreamingSpecification(exchangeSpecification, streamingService);
-    streamingMarketDataService = new GateioStreamingMarketDataService(streamingService);
+    streamingMarketDataService = new GateioStreamingMarketDataService(streamingService, this);
     streamingTradeService = new GateioStreamingTradeService(streamingService);
     streamingAccountService = new GateioStreamingAccountService(streamingService);
 

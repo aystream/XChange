@@ -24,6 +24,7 @@ import lombok.extern.jackson.Jacksonized;
 @JsonSubTypes({
   @Type(value = BitgetEventNotification.class, name = "event"),
   @Type(value = BitgetTickerNotification.class, name = "ticker"),
+  @Type(value = BitgetFuturesTickerNotification.class, name = "futures_ticker"),
   @Type(value = BitgetWsOrderBookSnapshotNotification.class, name = "books1"),
   @Type(value = BitgetWsOrderBookSnapshotNotification.class, name = "books5"),
   @Type(value = BitgetWsOrderBookSnapshotNotification.class, name = "books15"),

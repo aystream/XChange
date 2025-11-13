@@ -15,7 +15,9 @@ import io.reactivex.rxjava3.core.CompletableSource;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.Setter;
 import org.knowm.xchange.ExchangeSpecification;
@@ -63,9 +65,20 @@ public class BybitStreamingService extends JsonNettyStreamingService {
 
   @Override
   public String getSubscribeMessage(String channelName, Object... args) throws IOException {
-    LOG.info("getSubscribeMessage {}", channelName);
+    // Support batch subscriptions: if args contains additional channel names, include them
+    List<String> channels = new ArrayList<>();
+    channels.add(channelName);
+
+    // Add any additional channel names passed in args
+    for (Object arg : args) {
+      if (arg instanceof String) {
+        channels.add((String) arg);
+      }
+    }
+
+    LOG.info("getSubscribeMessage for {} channels: {}", channels.size(), channels);
     return objectMapper.writeValueAsString(
-        new BybitSubscribeMessage("subscribe", Collections.singletonList(channelName)));
+        new BybitSubscribeMessage("subscribe", channels));
   }
 
   @Override
@@ -116,6 +129,24 @@ public class BybitStreamingService extends JsonNettyStreamingService {
   public void pingPongDisconnectIfConnected() {
     if (pingPongSubscription != null && !pingPongSubscription.isDisposed()) {
       pingPongSubscription.dispose();
+    }
+  }
+
+  /**
+   * Subscribe to multiple channels in a single WebSocket message.
+   * Bybit supports up to 1000 topics per connection.
+   *
+   * @param channelNames List of channel names to subscribe to (e.g., "tickers.BTCUSDT")
+   */
+  public void subscribeBatch(List<String> channelNames) {
+    try {
+      String subscribeMessage = objectMapper.writeValueAsString(
+          new BybitSubscribeMessage("subscribe", channelNames));
+      LOG.info("Sending batch subscription for {} channels", channelNames.size());
+      LOG.debug("Batch subscription channels: {}", channelNames);
+      sendMessage(subscribeMessage);
+    } catch (IOException e) {
+      LOG.error("Failed to send batch subscription", e);
     }
   }
 

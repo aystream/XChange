@@ -173,4 +173,53 @@ public class GateioStreamingAdapters {
         .fundingRateEffectiveInMinutes(effectiveInMinutes)
         .build();
   }
+
+  public static FundingRate toFundingRate(
+      GateioFuturesTickerNotification notification, Date cachedNextFundingTime) {
+    if (notification == null || notification.getResult() == null || notification.getResult().isEmpty()) {
+      return null;
+    }
+
+    // Gate.io returns an array, get the first element
+    FuturesTickerPayload payload = notification.getResult().get(0);
+
+    if (payload.getFundingRate() == null || payload.getContract() == null) {
+      return null;
+    }
+
+    Instrument instrument = contractToInstrument(payload.getContract());
+    if (instrument == null) {
+      return null;
+    }
+
+    // Gate.io provides 8-hour funding rate, convert to 1-hour rate
+    BigDecimal fundingRate8h = payload.getFundingRate();
+    BigDecimal fundingRate1h =
+        fundingRate8h.divide(
+            BigDecimal.valueOf(8), fundingRate8h.scale() + 3, RoundingMode.HALF_EVEN);
+
+    // Use cached nextFundingTime from REST API if available, otherwise calculate locally
+    Date nextFundingTime;
+    long now = System.currentTimeMillis();
+
+    if (cachedNextFundingTime != null && cachedNextFundingTime.getTime() > now) {
+      // Use cached value from REST API
+      nextFundingTime = cachedNextFundingTime;
+    } else {
+      // Fall back to local calculation (Gate.io funding happens every 8 hours at 00:00, 08:00, 16:00 UTC)
+      long eightHoursMs = 8 * 60 * 60 * 1000;
+      long nextFundingMs = ((now / eightHoursMs) + 1) * eightHoursMs;
+      nextFundingTime = new Date(nextFundingMs);
+    }
+
+    long effectiveInMinutes = (nextFundingTime.getTime() - now) / (1000 * 60);
+
+    return new FundingRate.Builder()
+        .instrument(instrument)
+        .fundingRate1h(fundingRate1h)
+        .fundingRate8h(fundingRate8h)
+        .fundingRateDate(nextFundingTime)
+        .fundingRateEffectiveInMinutes(effectiveInMinutes)
+        .build();
+  }
 }

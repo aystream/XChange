@@ -23,7 +23,7 @@ public class MEXCStreamingExchange extends MEXCExchange implements StreamingExch
   protected void initServices() {
     super.initServices();
     this.streamingService = new MEXCStreamingService(URI);
-    this.streamingMarketDataService = new MEXCStreamingMarketDataService(streamingService);
+    this.streamingMarketDataService = new MEXCStreamingMarketDataService(streamingService, this);
   }
 
   @Override

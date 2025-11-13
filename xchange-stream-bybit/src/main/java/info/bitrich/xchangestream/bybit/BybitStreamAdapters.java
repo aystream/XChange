@@ -324,7 +324,14 @@ public class BybitStreamAdapters {
   public static FundingRate adaptFundingRate(
       org.knowm.xchange.bybit.dto.marketdata.tickers.linear.BybitLinearInverseTicker ticker,
       Instrument instrument) {
-    if (ticker.getFundingRate() == null || ticker.getNextFundingTime() == null) {
+    return adaptFundingRate(ticker, instrument, ticker.getNextFundingTime());
+  }
+
+  public static FundingRate adaptFundingRate(
+      org.knowm.xchange.bybit.dto.marketdata.tickers.linear.BybitLinearInverseTicker ticker,
+      Instrument instrument,
+      Date nextFundingTime) {
+    if (ticker.getFundingRate() == null || nextFundingTime == null) {
       return null;
     }
 
@@ -335,14 +342,13 @@ public class BybitStreamAdapters {
             BigDecimal.valueOf(8), fundingRate8h.scale() + 3, java.math.RoundingMode.HALF_EVEN);
 
     Date now = new Date();
-    long effectiveInMinutes =
-        (ticker.getNextFundingTime().getTime() - now.getTime()) / (1000 * 60);
+    long effectiveInMinutes = (nextFundingTime.getTime() - now.getTime()) / (1000 * 60);
 
     return new FundingRate.Builder()
         .instrument(instrument)
         .fundingRate1h(fundingRate1h)
         .fundingRate8h(fundingRate8h)
-        .fundingRateDate(ticker.getNextFundingTime())
+        .fundingRateDate(nextFundingTime)
         .fundingRateEffectiveInMinutes(effectiveInMinutes)
         .build();
   }
